@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name" background="@android:color/white">Like My Blog!</string>
+    <string name="pass_hint" />
+    <string name="password_hint">Password...</string>
+    <string name="email_hint">Your Email...</string>
+    <string name="AppLogo">ImageLogo</string>
+    <string name="login_btn" />
+    <string name="login_btn_text">Login to Account</string>
+    <string name="login_reg_btn_text">Need a New Account?</string>
+    <string name="action_search_text">Search</string>
+    <string name="account_settings_text">Account Settings</string>
+    <string name="action_logout_btn">Logout</string>
+    <string name="reg_btn_text">Create New Account</string>
+    <string name="reg_login_text">Already have an Account!</string>
+    <string name="reg_confirm_pass_Text">Confirm Password....</string>
+    <string name="reg_pass_text">Password...</string>
+    <string name="deactivate_account">For Deactivation</string>
+    <string name="setup_name_hint">Your Name</string>
+    <string name="setup_btn_name_text">Save Account Settings</string>
+    <string name="setup_text_name">Your Name..</string>
+    <string name="setup_input_text_name">Your Name..</string>
+    <string name="deactivate_btn_text">Click Me</string>
+    <string name="new_post_desc">Add Description</string>
+    <string name="new_post_add_hint">Post Blog</string>
+    <string name="new_post_image">newPostImage</string>
+    <string name="bottom_home_text">Home</string>
+    <string name="bottom_notification_text">Notification</string>
+    <string name="bottom_ac_text">Account</string>
+    <string name="add_post_btn">Add_Post_Btn</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="account_user_name">Name...</string>
+    <string name="account_desc_name">Description...</string>
+    <string name="account_collge_name">College..</string>
+</resources>
