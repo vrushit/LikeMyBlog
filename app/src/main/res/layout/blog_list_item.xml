@@ -28,10 +28,12 @@
                 android:layout_height="40dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginStart="8dp"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/blog_description"
                 app:srcCompat="@mipmap/action_like_grey" />
+
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/blog_user_image"

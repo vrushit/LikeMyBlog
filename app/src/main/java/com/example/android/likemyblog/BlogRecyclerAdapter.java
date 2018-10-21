@@ -47,6 +47,8 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
 
 
+
+
     public BlogRecyclerAdapter(List<BlogPost> blog_list, List<User> user_list){
         this.blog_list = blog_list;
         this.user_list = user_list;
@@ -71,48 +73,70 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
         holder.setIsRecyclable(false);
         final String blogPostId = blog_list.get(position).BlogPostId;
         final String currentUserId = firebaseAuth.getCurrentUser().getUid();
-            String descData = blog_list.get(position).getDesc();
-            holder.setDesctext(descData);
+        String descData = blog_list.get(position).getDesc();
+        holder.setDesctext(descData);
 
-            String image_url = blog_list.get(position).getImage_url();
-            holder.setBlogImage(image_url);
+        String image_url = blog_list.get(position).getImage_url();
+        holder.setBlogImage(image_url);
 
-            String blog_user_id = blog_list.get(position).getUser_id();
+        String blog_user_id = blog_list.get(position).getUser_id();
 
-            if(blog_user_id.equals(currentUserId))
-            {
-                holder.blogDeleteBtn.setEnabled(true);
-                holder.blogDeleteBtn.setVisibility(View.VISIBLE);
+        if(blog_user_id.equals(currentUserId))
+        {
+            holder.blogDeleteBtn.setEnabled(true);
+            holder.blogDeleteBtn.setVisibility(View.VISIBLE);
+        }
+        String userName = user_list.get(position).getName();
+        String userImage = user_list.get(position).getImage();
+
+        holder.setUserData(userName, userImage);
+
+
+        try {
+            long millisecond = blog_list.get(position).getTimestamp().getTime();
+            String dateString = DateFormat.format("MM/dd/yyyy", new Date(millisecond)).toString();
+            holder.setTime(dateString);
+        }
+        catch(Exception e) {
+
+            Toast.makeText(context, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+        }
+
+        //Get Like
+        firebaseFirestore.collection("Posts").document(blogPostId).collection("Likes").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+
+                if(documentSnapshot.exists())
+                {
+                    holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_accent));
+                }
+                else
+                {
+                    holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_grey));
+
+                }
+
+
             }
-            String userName = user_list.get(position).getName();
-            String userImage = user_list.get(position).getImage();
+        });
 
-            holder.setUserData(userName, userImage);
-
-
-            try {
-                long millisecond = blog_list.get(position).getTimestamp().getTime();
-                String dateString = DateFormat.format("MM/dd/yyyy", new Date(millisecond)).toString();
-                holder.setTime(dateString);
-            }
-            catch(Exception e) {
-
-                Toast.makeText(context, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
         //Get Likes Count
 
-0        firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").addSnapshotListener( new EventListener<QuerySnapshot>() {
+        firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").addSnapshotListener( new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
 
                 if(!documentSnapshots.isEmpty()){
 
                     int count = documentSnapshots.size();
+                   // holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_accent));
 
                     holder.updateLikeCount(count);
 
                 } else {
+                    //holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_grey));
 
                     holder.updateLikeCount(0);
 
@@ -122,94 +146,35 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
         });
 
 
-        //Get Likes
-        firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
 
-                if(documentSnapshot.exists()){
-
-                    holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_accent));
-
-                } else {
-
-                    holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_grey));
-
-                }
-
-            }
-        });
-
-
-/*
-//Get Likes Count
-        firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").addSnapshotListener( new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-
-                if(!documentSnapshots.isEmpty()){
-
-                    int count = documentSnapshots.size();
-
-                    holder.updateLikesCount(count);
-
-                } else {
-
-                    holder.updateLikesCount(0);
-
-                }
-
-            }
-        });
-
-
-        //Get Likes
-        firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
-
-                if(documentSnapshot.exists()){
-
-                    holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_accent));
-
-                } else {
-
-                    holder.blogLikeBtn.setImageDrawable(context.getDrawable(R.mipmap.action_like_gray));
-
-                }
-
-            }
-        });
-
- */
 
         //Likes Feature
         holder.blogLikeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                firebaseFirestore.collection("Posts").document(blogPostId).collection("Likes").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                        if(!task.getResult().exists()){
-
+                        if(!task.getResult().exists())
+                        {
                             Map<String, Object> likesMap = new HashMap<>();
                             likesMap.put("timestamp", FieldValue.serverTimestamp());
 
-                            firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").document(currentUserId).set(likesMap);
-
-                        } else {
-
-                            firebaseFirestore.collection("Posts/" + blogPostId + "/Likes").document(currentUserId).delete();
+                            firebaseFirestore.collection("Posts").document(blogPostId).collection("Likes").document(currentUserId).set(likesMap);
+                        }
+                        else
+                        {
+                            firebaseFirestore.collection("Posts").document(blogPostId).collection("Likes").document(currentUserId).delete();
 
                         }
 
                     }
                 });
+
             }
         });
-
 
 
 
@@ -224,22 +189,6 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
             }
         });
 
-/*
-        firebaseFirestore.collection("Posts/" + blogPostId + "/comments").addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
-                if(!documentSnapshots.isEmpty())
-                {
-                    int count = documentSnapshots.size();
-                    holder.updateCommentCount(count);
-                }
-                else
-                {
-                    holder.updateCommentCount(0);
-                }
-            }
-        });
-        */
 
         holder.blogDeleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -272,13 +221,14 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
         private CircleImageView blogUserImage;
 
 
-        private ImageView blogLikeBtn;
+     //   private ImageView blogLikeBtn;
         private TextView blogLikeCount;
 
         private ImageView blogCommentBtn;
         private TextView blogCommentCount;
 
         private Button blogDeleteBtn;
+        public ImageView blogLikeBtn;
 
 
         public ViewHolder(View itemView) {
@@ -302,16 +252,16 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
 
         public void setBlogImage(String downloadUri)
         {
-                blogImageView = mView.findViewById(R.id.blog_image);
+            blogImageView = mView.findViewById(R.id.blog_image);
 
             RequestOptions placeholderOptions = new RequestOptions();
             placeholderOptions.placeholder(R.mipmap.image2);
-                Glide.with(context).applyDefaultRequestOptions(placeholderOptions).load(downloadUri).into(blogImageView);
+            Glide.with(context).applyDefaultRequestOptions(placeholderOptions).load(downloadUri).into(blogImageView);
         }
         public void setTime(String date)
         {
-         blogDate = mView.findViewById(R.id.blog_date);
-         blogDate.setText(date);
+            blogDate = mView.findViewById(R.id.blog_date);
+            blogDate.setText(date);
         }
         public void setUserData(String name, String image)
         {
@@ -337,5 +287,6 @@ public class BlogRecyclerAdapter extends RecyclerView.Adapter<BlogRecyclerAdapte
         }
 
     }
+
 
 }

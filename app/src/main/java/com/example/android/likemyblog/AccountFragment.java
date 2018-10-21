@@ -24,8 +24,10 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -82,19 +84,19 @@ public class AccountFragment extends Fragment {
         CollegeName = view.findViewById(R.id.user_college);
 
 
-         String currentUserId = firebaseAuth.getCurrentUser().toString();
+         final String common = "userDescription";
 
 
 
         saveAccountInfoBtn = view.findViewById(R.id.account_setup_btn);
         //
         //New Idea//////////////////////////////////////
-        /*
+
             firebaseFirestore.collection("Users").document(userId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                    if (task.isSuccessful()) {
+                    if (task.getResult().exists()) {
                         String name = task.getResult().getString("name");
                         String image = task.getResult().getString("image");
                         mainImageUri = Uri.parse(image);
@@ -105,12 +107,15 @@ public class AccountFragment extends Fragment {
                         Glide.with(getContext()).setDefaultRequestOptions(placeholderRequest).load(image).into(accountImage);
 
                     } else {
-                        String error = task.getException().getMessage();
-                        Toast.makeText(getContext(), "FIRESTORE Retrieve Error : " + error, Toast.LENGTH_LONG).show();
+
+                        Intent setupIntent = new Intent(getContext(), SetupActivity.class);
+                        startActivity(setupIntent);
+                        //String error = task.getException().getMessage();
+                        //Toast.makeText(getContext(), "FIRESTORE Retrieve Error : " + error, Toast.LENGTH_LONG).show();
                     }
                 }
             });
-        /*
+
         saveAccountInfoBtn.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -126,23 +131,24 @@ public class AccountFragment extends Fragment {
                 {
 
                     userId = firebaseAuth.getCurrentUser().getUid();
-                    Map<String, String> accountMap = new HashMap<>();
 
-                    accountMap.put("college", college_text);
-                    accountMap.put("Account Description", account_desc );
-                    firebaseFirestore.collection("Users" + userId + "/User Description").document(userId).set(accountMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    firebaseFirestore.collection("Users").document(userId).collection("User Description").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
                             if(task.isSuccessful())
                             {
+                                Map<String, String> accountMap = new HashMap<>();
+
+                                accountMap.put("college", college_text);
+                                accountMap.put("Account Description", account_desc );
+
+                                firebaseFirestore.collection("Users").document(userId).collection("User Description").document(userId).set(accountMap);
                                 Toast.makeText(getContext(), "Updated", Toast.LENGTH_LONG).show();
 
                             }
                             else
                             {
-                                String error = task.getException().getMessage();
-                                Toast.makeText(getContext(), " Error : " + error, Toast.LENGTH_LONG).show();
+                                Toast.makeText(getContext(), "Data doesn't Exists", Toast.LENGTH_LONG).show();
                             }
                         }
                     });
@@ -150,7 +156,30 @@ public class AccountFragment extends Fragment {
                 }
             }
         });
-            */
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if(currentUser!=null){
+            firebaseFirestore.collection("Users").document(userId).collection("User Description").document(userId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                    if(task.getResult().exists())
+                    {
+                        String description = task.getResult().getString("Account Description");
+                        String college = task.getResult().getString("college");
+
+                        AccountDesc.setText(description);
+                        CollegeName.setText(college);
+                    }
+                    else
+                    {
+                        // Toast.makeText(getContext(), "FireStore Retrieve Error", Toast.LENGTH_LONG).show();
+
+                    }
+                }
+            });
+
+        }
+
             ///////////////////////
         deactivateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
